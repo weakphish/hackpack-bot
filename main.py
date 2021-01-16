@@ -4,11 +4,13 @@ import json
 
 client = discord.Client()
 
+
 def load_config(filename: str) -> str:
     with open(filename, "r") as config:
         data = json.load(config)
         token = data["token"]
         return token
+
 
 class HackpackBot(discord.Client):
     """
@@ -21,24 +23,42 @@ class HackpackBot(discord.Client):
 
     @client.event
     async def on_message(self, message: discord.Message):
-        if message.author != client.user and message.content.startswith(self.prefix + 'hello'):
+        """
+        Handles message commands
+        """
+        if message.author == client.user:
+            return
+        if message.content.startswith(self.prefix + 'hello'):
             await message.channel.send("Hello!")
-    
-    def get_ctf_upcoming(self, number: int, start_timestamp: int, end_timestamp: int):
+        if message.content.startswith(self.prefix + 'ctflist'):
+            await message.channel.send("Getting upcoming CTFs...")
+            self.get_ctf_upcoming(10)
+
+    @client.event
+    async def on_member_join(self, member):
+        """
+        Welcome new members to the server
+        """
+        channel = client.get_channel(797912808082767923)
+        await channel.send("Welcome, " + member.name + "!")
+
+    def get_ctf_upcoming(self, limit: int):
         """
         Gets upcoming events from CTFTime
         """
-        payload = {"limit": number, "start": start_timestamp, "finish": end_timestamp}
-        headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+        payload = {"limit": limit}
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
         url = "https://ctftime.org/api/v1/events/"
-        r = requests.get(url, headers=headers, params=payload)
+        response = requests.get(url, headers=headers, params=payload)
+        print(response.json())
 
 
 def main():
     token = load_config("config.json")
 
     client = HackpackBot()
-    client.get_ctf_upcoming(100, 1422019499, 1423029499)
+    client.get_ctf_upcoming(100)
     client.run(token)
 
 
