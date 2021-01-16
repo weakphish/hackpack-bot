@@ -6,6 +6,9 @@ client = discord.Client()
 
 
 def load_config(filename: str) -> str:
+    """
+    Load the configuration file containing the bot's secret token and return it as a string
+    """
     with open(filename, "r") as config:
         data = json.load(config)
         token = data["token"]
@@ -37,7 +40,7 @@ class HackpackBot(discord.Client):
     @client.event
     async def on_member_join(self, member):
         """
-        Welcome new members to the server
+        Welcome new members to the server (welcome channel)
         """
         channel = client.get_channel(797912808082767923)
         await channel.send("Welcome, " + member.name + "!")
@@ -49,6 +52,7 @@ class HackpackBot(discord.Client):
         payload = {"limit": limit}
         headers = {
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+
         url = "https://ctftime.org/api/v1/events/"
         response = requests.get(url, headers=headers, params=payload)
         print(response.json())
