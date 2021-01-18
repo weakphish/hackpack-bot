@@ -51,9 +51,10 @@ class HackpackBot(discord.Client):
         """
         payload = {"limit": limit}
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
-
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
+        }
         url = "https://ctftime.org/api/v1/events/"
+
         response = requests.get(url, headers=headers, params=payload)
         print(response.json())
 
