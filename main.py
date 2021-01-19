@@ -71,12 +71,14 @@ class HackpackBot(discord.Client):
             logo_url = response_json[i]["logo"]
             ctf_title = response_json[i]["title"]
             ctf_desc = response_json[i]["description"]
+            ctf_start = response_json[i]["start"]
 
             embed_var = discord.Embed(title=ctf_title, description=ctf_desc)
             embed_var.add_field(name="URL", value=ctf_url, inline=True)
             embed_var.add_field(
                 name="Organizer", value=organizer_name, inline=True)
             embed_var.add_field(name="Format", value=ctf_format, inline=True)
+            embed_var.add_field(name="Starts: ", value=ctf_start)
             embed_var.set_image(url=logo_url)
 
             ctfs_upcoming.append(embed_var)
