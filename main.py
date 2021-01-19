@@ -33,9 +33,11 @@ class HackpackBot(discord.Client):
             return
         if message.content.startswith(self.prefix + 'hello'):
             await message.channel.send("Hello!")
-        if message.content.startswith(self.prefix + 'ctflist'):
+        if message.content.startswith(self.prefix + 'ctf') and "list" in message.content:
             await message.channel.send("Getting upcoming CTFs...")
-            self.get_ctf_upcoming(10)
+            ctfs_upcoming = self.get_ctf_upcoming(5)
+            for embed_var in ctfs_upcoming:
+                await message.channel.send(embed=embed_var)
 
     @client.event
     async def on_member_join(self, member):
@@ -47,7 +49,8 @@ class HackpackBot(discord.Client):
 
     def get_ctf_upcoming(self, limit: int):
         """
-        Gets upcoming events from CTFTime
+        Gets upcoming events from CTFTime. Takes a limit as a parameter and returns a discord embed
+        that will be handled by the caller.
         """
         payload = {"limit": limit}
         headers = {
@@ -55,15 +58,31 @@ class HackpackBot(discord.Client):
         }
         url = "https://ctftime.org/api/v1/events/"
 
-        response = requests.get(url, headers=headers, params=payload)
-        print(response.json())
+        response_json = requests.get(
+            url, headers=headers, params=payload).json()
+
+        #  Parse response for information
+        ctfs_upcoming = []
+
+        for i in range(limit):
+            organizer_name = response_json[i]["organizers"][0]["name"]
+            ctf_url = response_json[i]["ctftime_url"]
+            ctf_format = response_json[i]["format"]
+            logo_url = response_json[i]["logo"]
+            ctf_title = response_json[i]["title"]
+            ctf_desc = response_json[i]["description"]
+
+            embed_var = discord.Embed(title=ctf_title, description=ctf_desc)
+
+            ctfs_upcoming.append(embed_var)
+
+        return ctfs_upcoming
 
 
 def main():
     token = load_config("config.json")
 
     client = HackpackBot()
-    client.get_ctf_upcoming(100)
     client.run(token)
 
 
