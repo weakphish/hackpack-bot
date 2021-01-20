@@ -1,5 +1,4 @@
 import discord
-from discord.channel import CategoryChannel
 import requests
 import json
 
@@ -56,6 +55,12 @@ class HackpackBot(discord.Client):
                 guild.categories, name=ctf_category_name)
             await guild.create_text_channel(name=ctf_name, overwrites=overwrites, category=category)
         # TODO !ctf join   ____ - Join the given CTF role / channel
+        elif message.content.startswith(self.prefix + "ctf") and "join" in message.content:
+            guild = self.guilds[0]
+            ctf_name = message.content.split(" ")[2]
+            ctf_role = discord.utils.get(guild.roles, name=ctf_name)
+            await message.author.add_roles(ctf_role)
+            await message.channel.send(f"Hey {message.author.name}, you've been added to {ctf_role.name}!")
         # TODO !ctf delete ____ - Remove CTF role and channel
 
     @client.event
