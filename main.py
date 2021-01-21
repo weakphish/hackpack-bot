@@ -68,7 +68,8 @@ class HackpackBot(discord.Client):
         """
         Welcome new members to the server (welcome channel)
         """
-        channel = client.get_channel(797912808082767923)
+        welcome_channel_id = 797912808082767923
+        channel = client.get_channel(welcome_channel_id)
         await channel.send("Welcome, " + member.name + "!")
 
     def get_ctf_upcoming(self, limit: int):
