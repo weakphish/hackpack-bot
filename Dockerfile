@@ -6,6 +6,7 @@ RUN yes | apt-get update
 RUN yes | apt-get install -y python3-pip python3-dev
 
 COPY ./requirements.txt /requirements.txt
+COPY ./config.json /config.json
 
 WORKDIR /
 
