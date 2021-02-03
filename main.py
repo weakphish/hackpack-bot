@@ -34,10 +34,15 @@ class HackpackBot(discord.Client):
         # !hello - Says hello!
         if message.content.startswith(self.prefix + 'hello'):
             await message.channel.send("Hello!")
+        # !help - Help function for the bot
+        if message.content.startswith(self.prefix + 'help'):
+            desc = "Commands: !ctf list: List upcoming CTFs\n!ctf create ____: Create a new CTF\n!ctf join ____: Join an ongoing CTF"
+            embed_var = discord.Embed(title="Help", description=desc)
+            await message.channel.send(embed=embed_var)
         # !ctf list - Lists upcoming CTFs from CTFtime
         if message.content.startswith(self.prefix + 'ctf') and "list" in message.content:
             await message.channel.send("Getting upcoming CTFs...")
-            ctfs_upcoming = self.get_ctf_upcoming(5)
+            ctfs_upcoming = self.get_ctf_upcoming(15)
             for embed_var in ctfs_upcoming:
                 await message.channel.send(embed=embed_var)
         # !ctf create ____ - Creates a new CTF event for the server with a role and channel
@@ -104,7 +109,6 @@ class HackpackBot(discord.Client):
                 name="Organizer", value=organizer_name, inline=True)
             embed_var.add_field(name="Format", value=ctf_format, inline=True)
             embed_var.add_field(name="Starts: ", value=ctf_start)
-            embed_var.set_image(url=logo_url)
 
             ctfs_upcoming.append(embed_var)
 
