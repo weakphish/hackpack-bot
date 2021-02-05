@@ -28,7 +28,7 @@ async def ctf_help(ctx: Context):
     """
     Help function for the bot. Keep me updated!
     """
-    desc = "Commands:\n!ctf list: List upcoming CTFs\n!ctf create <name>: Create a new CTF\n!ctf join <name>: Join an ongoing CTF\n!ctf leave <name>: Leave a CTF channel"
+    desc = "Commands:\n!ctf-list: List upcoming CTFs\n!ctf-create <name>: Create a new CTF\n!ctf-join <name>: Join an ongoing CTF\n!ctf-leave <name>: Leave a CTF channel"
     embed_var = discord.Embed(title="Help", description=desc)
     await ctx.send(embed=embed_var)
 
