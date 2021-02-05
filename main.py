@@ -1,8 +1,11 @@
 import discord
+from discord.ext import commands
+from discord.ext.commands import Context
 import requests
 import json
 
 client = discord.Client()
+bot = commands.Bot(command_prefix='!')
 
 
 def load_config(filename: str) -> str:
@@ -19,69 +22,65 @@ class HackpackBot(discord.Client):
     """
     The main bot class
     """
-    prefix = '!'
 
     async def on_ready(self):
         print("Hello, {0}!".format(self.user))
 
-    @client.event
-    async def on_message(self, message: discord.Message):
-        """
-        Handles message commands
-        """
-        if message.author == client.user:
-            return
-        # !hello - Says hello!
-        if message.content.startswith(self.prefix + 'hello'):
-            await message.channel.send("Hello!")
-        # !help - Help function for the bot
-        if message.content.startswith(self.prefix + 'help'):
-            desc = "Commands:\n!ctf list: List upcoming CTFs\n!ctf create <name>: Create a new CTF\n!ctf join <name>: Join an ongoing CTF\n!ctf leave <name>: Leave a CTF channel"
-            embed_var = discord.Embed(title="Help", description=desc)
-            await message.channel.send(embed=embed_var)
-        # !ctf list - Lists upcoming CTFs from CTFtime
-        if message.content.startswith(self.prefix + 'ctf') and "list" in message.content:
-            await message.channel.send("Getting upcoming CTFs...")
-            ctfs_upcoming = self.get_ctf_upcoming(15)
-            for embed_var in ctfs_upcoming:
-                await message.channel.send(embed=embed_var)
-        # !ctf create ____ - Creates a new CTF event for the server with a role and channel
-        elif message.content.startswith(self.prefix + 'ctf') and "create" in message.content:
-            # This is a bit spaghetti, I am so sorry - John
-            ctf_name = message.content.split(" ")[2]
-            guild = self.guilds[0]
-            ctf_role = await guild.create_role(name=ctf_name)
-            overwrites = {
-                guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                guild.get_role(ctf_role.id): discord.PermissionOverwrite(read_messages=True)
-            }
-            ctf_category_name = "CTFs"
-            category = discord.utils.get(
-                guild.categories, name=ctf_category_name)
-            await guild.create_text_channel(name=ctf_name, overwrites=overwrites, category=category)
-        # !ctf join   ____ - Join the given CTF role / channel
-        elif message.content.startswith(self.prefix + "ctf") and "join" in message.content:
-            guild = self.guilds[0]
-            ctf_name = message.content.split(" ")[2]
-            ctf_role = discord.utils.get(guild.roles, name=ctf_name)
-            await message.author.add_roles(ctf_role)
-            # TODO fix this
-            await message.channel.send(f"Hey {message.author.name}, you've been added to {ctf_role.name}!")
-        # !ctf leave ____ - Remove CTF role and channel
-        elif message.content.startswith(self.prefix + "ctf") and "leave" in message.content:
-            guild = self.guilds[0]
-            ctf_name = message.content.split(" ")[2]
-            ctf_role = discord.utils.get(guild.roles, name=ctf_name)
-            await message.author.remove_roles(ctf_role)
+    @bot.command()
+    async def hello(ctx: Context):
+        await ctx.send("Hello!")
 
-    @client.event
-    async def on_member_join(self, member):
+    @bot.command()
+    async def help(ctx: Context):
         """
-        Welcome new members to the server (welcome channel)
+        Help function for the bot. Keep me updated!
         """
-        welcome_channel_id = 797912808082767923
-        channel = client.get_channel(welcome_channel_id)
-        await channel.send("Welcome, " + member.name + "!")
+        desc = "Commands:\n!ctf list: List upcoming CTFs\n!ctf create <name>: Create a new CTF\n!ctf join <name>: Join an ongoing CTF\n!ctf leave <name>: Leave a CTF channel"
+        embed_var = discord.Embed(title="Help", description=desc)
+        await ctx.send(embed=embed_var)
+
+    @bot.command()
+    async def ctf_list(self, ctx: Context):
+        """
+        List upcoming CTFs. Usage: !ctf list
+        """
+        await ctx.send("Getting upcoming CTFs...")
+        ctfs_upcoming = self.get_ctf_upcoming(15)
+        for embed_var in ctfs_upcoming:
+            await ctx.send(embed=embed_var)
+
+    @bot.command()
+    async def ctf_create(self, ctx: Context):
+        """
+        Create a CTF with a given name.
+        """
+        # This is a bit spaghetti, I am so sorry - John
+        ctf_name = ctx.message.content.split(" ")[2]
+        guild = self.guilds[0]
+        ctf_role = await guild.create_role(name=ctf_name)
+        overwrites = {
+            guild.default_role: discord.PermissionOverwrite(read_messages=False),
+            guild.get_role(ctf_role.id): discord.PermissionOverwrite(read_messages=True)
+        }
+        ctf_category_name = "CTFs"
+        category = discord.utils.get(guild.categories, name=ctf_category_name)
+        await guild.create_text_channel(name=ctf_name, overwrites=overwrites, category=category)
+
+    @bot.command()
+    async def ctf_join(self, ctx: Context):
+        guild = self.guilds[0]
+        ctf_name = ctx.message.content.split(" ")[2]
+        ctf_role = discord.utils.get(guild.roles, name=ctf_name)
+        await ctx.message.author.add_roles(ctf_role)
+        # TODO fix this to be less annoying
+        # await message.channel.send(f"Hey {message.author.name}, you've been added to {ctf_role.name}!")
+
+    @bot.command()
+    async def ctf_leave(self, ctx: Context):
+        guild = self.guilds[0]
+        ctf_name = ctx.message.content.split(" ")[2]
+        ctf_role = discord.utils.get(guild.roles, name=ctf_name)
+        await ctx.message.author.remove_roles(ctf_role)
 
     def get_ctf_upcoming(self, limit: int):
         """
