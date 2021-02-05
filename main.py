@@ -36,7 +36,7 @@ class HackpackBot(discord.Client):
             await message.channel.send("Hello!")
         # !help - Help function for the bot
         if message.content.startswith(self.prefix + 'help'):
-            desc = "Commands:\n!ctf list: List upcoming CTFs\n!ctf create <name>: Create a new CTF\n!ctf join <name>: Join an ongoing CTF"
+            desc = "Commands:\n!ctf list: List upcoming CTFs\n!ctf create <name>: Create a new CTF\n!ctf join <name>: Join an ongoing CTF\n!ctf leave <name>: Leave a CTF channel"
             embed_var = discord.Embed(title="Help", description=desc)
             await message.channel.send(embed=embed_var)
         # !ctf list - Lists upcoming CTFs from CTFtime
@@ -67,7 +67,12 @@ class HackpackBot(discord.Client):
             await message.author.add_roles(ctf_role)
             # TODO fix this
             await message.channel.send(f"Hey {message.author.name}, you've been added to {ctf_role.name}!")
-        # TODO !ctf delete ____ - Remove CTF role and channel
+        # !ctf leave ____ - Remove CTF role and channel
+        elif message.content.startswith(self.prefix + "ctf") and "leave" in message.content:
+            guild = self.guilds[0]
+            ctf_name = message.content.split(" ")[2]
+            ctf_role = discord.utils.get(guild.roles, name=ctf_name)
+            await message.author.remove_roles(ctf_role)
 
     @client.event
     async def on_member_join(self, member):
