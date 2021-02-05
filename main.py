@@ -27,11 +27,11 @@ class HackpackBot(discord.Client):
         print("Hello, {0}!".format(self.user))
 
     @bot.command()
-    async def hello(ctx: Context):
+    async def ctf_hello(ctx: Context):
         await ctx.send("Hello!")
 
     @bot.command()
-    async def help(ctx: Context):
+    async def ctf_help(ctx: Context):
         """
         Help function for the bot. Keep me updated!
         """
