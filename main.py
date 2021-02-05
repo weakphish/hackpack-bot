@@ -36,7 +36,7 @@ class HackpackBot(discord.Client):
             await message.channel.send("Hello!")
         # !help - Help function for the bot
         if message.content.startswith(self.prefix + 'help'):
-            desc = "Commands: !ctf list: List upcoming CTFs\n!ctf create ____: Create a new CTF\n!ctf join ____: Join an ongoing CTF"
+            desc = "Commands:\n!ctf list: List upcoming CTFs\n!ctf create <name>: Create a new CTF\n!ctf join <name>: Join an ongoing CTF"
             embed_var = discord.Embed(title="Help", description=desc)
             await message.channel.send(embed=embed_var)
         # !ctf list - Lists upcoming CTFs from CTFtime
