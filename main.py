@@ -23,7 +23,7 @@ async def ctf_hello(ctx: Context):
     await ctx.send("Hello!")
 
 
-@bot.command(name="ctf help")
+@bot.command(name="ctf-help")
 async def ctf_help(ctx: Context):
     """
     Help function for the bot. Keep me updated!
@@ -33,7 +33,7 @@ async def ctf_help(ctx: Context):
     await ctx.send(embed=embed_var)
 
 
-@bot.command(name="ctf list")
+@bot.command(name="ctf-list")
 async def ctf_list(ctx: Context):
     """
     List upcoming CTFs. Usage: !ctf list
