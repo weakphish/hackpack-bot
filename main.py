@@ -61,9 +61,8 @@ async def ctf_create(ctx: Context, ctf_name):
 
 
 @bot.command(name="ctf-join")
-async def ctf_join(ctx: Context):
+async def ctf_join(ctx: Context, ctf_name):
     guild = bot.guilds[0]
-    ctf_name = ctx.message.content.split(" ")[2]
     ctf_role = discord.utils.get(guild.roles, name=ctf_name)
     await ctx.message.author.add_roles(ctf_role)
     # TODO fix this to be less annoying
@@ -71,9 +70,8 @@ async def ctf_join(ctx: Context):
 
 
 @bot.command(name="ctf-leave")
-async def ctf_leave(ctx: Context):
+async def ctf_leave(ctx: Context, ctf_name):
     guild = bot.guilds[0]
-    ctf_name = ctx.message.content.split(" ")[2]
     ctf_role = discord.utils.get(guild.roles, name=ctf_name)
     await ctx.message.author.remove_roles(ctf_role)
 
