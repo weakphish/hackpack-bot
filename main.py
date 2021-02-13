@@ -3,6 +3,8 @@ from discord.ext import commands
 from discord.ext.commands import Context
 import requests
 import json
+import base64
+import hashlib
 
 client = discord.Client()
 bot = commands.Bot(command_prefix='!')
@@ -28,7 +30,7 @@ async def ctf_help(ctx: Context):
     """
     Help function for the bot. Keep me updated!
     """
-    desc = "Commands:\n!ctf-list: List upcoming CTFs\n!ctf-create <name>: Create a new CTF\n!ctf-join <name>: Join an ongoing CTF\n!ctf-leave <name>: Leave a CTF channel"
+    desc = "Commands:\n!ctf-list: List upcoming CTFs\n!ctf-create <name>: Create a new CTF\n!ctf-join <name>: Join an ongoing CTF\n!ctf-leave <name>: Leave a CTF channel\n!encode <format> <string>: Encode a string to a specific format."
     embed_var = discord.Embed(title="Help", description=desc)
     await ctx.send(embed=embed_var)
 
@@ -75,6 +77,21 @@ async def ctf_leave(ctx: Context, ctf_name):
     ctf_role = discord.utils.get(guild.roles, name=ctf_name)
     await ctx.message.author.remove_roles(ctf_role)
 
+@bot.command
+async def encode(ctx: Context, method, *args):
+    msg = b" ".join(args)
+    if method == "base64":
+        msg = base64.b64encode(msg)
+        await ctx.send(msg)
+        return
+
+@bot.command
+async def decode(ctx: Context, method, *args):
+    msg = b" ".join(args)
+    if method == "base64":
+        msg = base64.b64decode(msg)
+        await ctx.send(msg)
+        return
 
 def get_ctf_upcoming(limit: int):
     """
