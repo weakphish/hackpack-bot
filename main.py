@@ -6,7 +6,7 @@ import discord
 from discord.ext import commands
 import json
 
-intents = Intents.all()
+intents = Intents.default()
 client = discord.Client(intents=intents)
 bot = commands.Bot(command_prefix='!')
 
