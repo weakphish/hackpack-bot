@@ -1,10 +1,13 @@
+from discord.flags import Intents
+from API_Iterables.ctftime_iterable import CtfTimeEvents
 from Cogs.crypto import CryptoCog
 from Cogs.ctf import CtfCog
 import discord
 from discord.ext import commands
 import json
 
-client = discord.Client()
+intents = Intents.all()
+client = discord.Client(intents=intents)
 bot = commands.Bot(command_prefix='!')
 
 

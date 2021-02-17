@@ -1,12 +1,15 @@
+from asyncio.tasks import FIRST_COMPLETED
+from logging import exception
+from API_Iterables.ctftime_iterable import CtfTimeEvents
 import discord
 from discord.ext import commands
 from discord.ext.commands.context import Context
-import requests
+import asyncio
 
 
 class CtfCog(commands.Cog, name='CTF Commands'):
     def __init__(self, bot):
-        self.bot = bot
+        self.bot: discord.Client = bot
 
     @commands.group(invoke_without_command=True)
     async def ctf(self, ctx: Context):
@@ -20,10 +23,54 @@ class CtfCog(commands.Cog, name='CTF Commands'):
         """
         List upcoming CTFs. Usage: !ctf list
         """
-        await ctx.send("Getting upcoming CTFs...")
-        ctfs_upcoming = self.get_ctf_upcoming(15)
-        for embed_var in ctfs_upcoming:
-            await ctx.send(embed=embed_var)
+        forward='➡'
+        backward='⬅'
+        stop='⏹️'
+        delete ='🚮'
+        emojis = [forward, backward, stop, delete]
+        msg: discord.Message = await ctx.send("Getting upcoming CTFs...")
+        ctfs_upcoming = CtfTimeEvents()
+        await msg.add_reaction(backward)
+        await msg.add_reaction(forward)
+        await msg.add_reaction(stop)
+        await msg.add_reaction(delete)
+        await msg.edit(content=None, embed=ctfs_upcoming.current())
+        def paginate_check(payload: discord.RawReactionActionEvent):
+            emoji = str(payload.emoji)
+            author: discord.User = ctx.author
+            return payload.user_id == author.id and payload.message_id == msg.id and (emoji in emojis) 
+        while True:
+            try:
+                done, pending = await asyncio.wait([self.bot.wait_for('raw_reaction_add', timeout=60, check=paginate_check), self.bot.wait_for('raw_reaction_remove', timeout=60, check=paginate_check)], return_when=FIRST_COMPLETED)
+                
+                for i in pending:
+                    i.cancel()
+
+                if len(done) == 0:
+                    raise asyncio.TimeoutError
+
+                payload = done.pop().result()
+                emoji = str(payload.emoji)
+                if emoji == forward:
+                    await msg.edit(embed=ctfs_upcoming.next())
+                elif emoji == backward:
+                    await msg.edit(embed=ctfs_upcoming.prev())
+                elif emoji == stop:
+                    for e in emojis:
+                        await msg.remove_reaction(e, self.bot.user)
+                    return
+                elif emoji == delete:
+                    await msg.delete()
+                    return
+            except asyncio.TimeoutError:
+                for e in emojis:
+                    await msg.remove_reaction(e, self.bot.user)
+                return
+            except:
+                return
+
+    
+
 
     @ctf.command(name="create")
     async def ctf_create(self, ctx: Context, ctf_name):
@@ -50,43 +97,3 @@ class CtfCog(commands.Cog, name='CTF Commands'):
     async def ctf_leave(ctx: Context, ctf_name):
         ctf_role = discord.utils.get(ctx.guild.roles, name=ctf_name)
         await ctx.message.author.remove_roles(ctf_role)
-
-    def get_ctf_upcoming(self, limit: int):
-        """
-        Gets upcoming events from CTFTime. Takes a limit as a parameter and returns a discord embed
-        that will be handled by the caller.
-        """
-        payload = {"limit": limit}
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
-        }
-        url = "https://ctftime.org/api/v1/events/"
-
-        response_json = requests.get(
-            url, headers=headers, params=payload).json()
-
-        #  Parse response for information
-        ctfs_upcoming = []
-
-        for i in range(limit):
-            organizer_name = response_json[i]["organizers"][0]["name"]
-            ctf_url = response_json[i]["ctftime_url"]
-            ctf_format = response_json[i]["format"]
-            logo_url = response_json[i]["logo"]
-            ctf_title = response_json[i]["title"]
-            ctf_desc = response_json[i]["description"]
-            ctf_start = response_json[i]["start"]
-
-            embed_var = discord.Embed(title=ctf_title, description=ctf_desc, url=ctf_url)
-
-            embed_var \
-                .set_author(name=organizer_name, icon_url=logo_url) \
-                .add_field(name="URL", value=ctf_url, inline=True) \
-                .add_field(
-                    name="Organizer", value=organizer_name, inline=True) \
-                .add_field(name="Format", value=ctf_format, inline=True) \
-                .add_field(name="Starts: ", value=ctf_start)
-
-            ctfs_upcoming.append(embed_var)
-
-        return ctfs_upcoming
