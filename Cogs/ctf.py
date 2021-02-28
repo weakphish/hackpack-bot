@@ -17,7 +17,7 @@ class CtfCog(commands.Cog, name='CTF Commands'):
         The CTF command group. To see all options do !help ctf
         """
         await ctx.send_help(ctx.command)
-    
+
     @ctf.command()
     async def list(self, ctx: Context):
         """
@@ -41,8 +41,9 @@ class CtfCog(commands.Cog, name='CTF Commands'):
             return payload.user_id == author.id and payload.message_id == msg.id and (emoji in emojis) 
         while True:
             try:
-                done, pending = await asyncio.wait([self.bot.wait_for('raw_reaction_add', timeout=60, check=paginate_check), self.bot.wait_for('raw_reaction_remove', timeout=60, check=paginate_check)], return_when=FIRST_COMPLETED)
-                
+                done, pending = await asyncio.wait([self.bot.wait_for('raw_reaction_add', timeout=60, check=paginate_check), \
+                                                    self.bot.wait_for('raw_reaction_remove', timeout=60, check=paginate_check)], return_when=FIRST_COMPLETED)
+
                 for i in pending:
                     i.cancel()
 
@@ -68,9 +69,6 @@ class CtfCog(commands.Cog, name='CTF Commands'):
                 return
             except:
                 return
-
-    
-
 
     @ctf.command(name="create")
     async def ctf_create(self, ctx: Context, ctf_name):
