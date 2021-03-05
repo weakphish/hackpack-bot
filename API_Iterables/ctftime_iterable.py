@@ -36,8 +36,8 @@ class CtfTimeEvents:
     def prev(self):
         self.currentIndex -= 1
         if (self.currentIndex < 0):
-            self.payload['start'] = self.payload['finish']
-            self.payload['finish'] = self.get_timestamp_plus_weeks(self.payload['finish'], -2)
+            self.payload['finish'] = self.payload['start']
+            self.payload['start'] = self.get_timestamp_plus_weeks(self.payload['finish'], -2)
             self.set_up_ctf_embed_list()
         return self.currentList[self.currentIndex]
 
