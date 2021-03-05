@@ -17,7 +17,7 @@ class CtfTimeEvents:
             'User-Agent': 'HackPack Bot/1.0.0'
         }
 
-
+        self.attempts = 0
         self.currentList = []
         self.currentIndex = 0
         self.set_up_ctf_embed_list()
@@ -30,21 +30,31 @@ class CtfTimeEvents:
         if (len(self.currentList) == self.currentIndex):
             self.payload['start'] = self.payload['finish']
             self.payload['finish'] = self.get_timestamp_plus_weeks(self.payload['finish'], 2)
-            self.set_up_ctf_embed_list()
+            if not self.set_up_ctf_embed_list():
+                return self.next()
         return self.currentList[self.currentIndex]
 
     def prev(self):
         self.currentIndex -= 1
         if (self.currentIndex < 0):
-            self.payload['start'] = self.payload['finish']
-            self.payload['finish'] = self.get_timestamp_plus_weeks(self.payload['finish'], -2)
-            self.set_up_ctf_embed_list()
+            self.payload['finish'] = self.payload['start']
+            self.payload['start'] = self.get_timestamp_plus_weeks(self.payload['finish'], -2)
+            if not self.set_up_ctf_embed_list():
+                return self.prev()
         return self.currentList[self.currentIndex]
 
     def set_up_ctf_embed_list(self):
         response_json = requests.get(self.baseUrl, headers=self.headers, params=self.payload).json()
         self.currentIndex = 0
         self.currentList = self.parse_json(response_json)
+        if len(self.currentList) == 0:
+            if self.attempts == 5:
+                raise Exception("No CTF's found in the past 5 attempted retrievals")
+            self.attempts += 1
+            return False
+        
+        self.attempts = 0
+        return True
 
     def parse_json(self, json):
         ctf_embeds = []

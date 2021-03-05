@@ -1,5 +1,13 @@
 from asyncio.tasks import FIRST_COMPLETED
 from logging import exception
+from discord import message
+from discord.channel import TextChannel
+from discord.guild import Guild
+from discord.member import Member
+
+from discord.message import Message
+from discord.raw_models import RawReactionActionEvent
+from discord.role import Role
 from API_Iterables.ctftime_iterable import CtfTimeEvents
 import discord
 from discord.ext import commands
@@ -9,7 +17,32 @@ import asyncio
 
 class CtfCog(commands.Cog, name='CTF Commands'):
     def __init__(self, bot):
-        self.bot: discord.Client = bot
+        self.bot: commands.Bot = bot
+        self.join_leave_start_str = f'{self.bot.command_prefix}ctf create '
+
+    async def handle_ctf_reaction(self, payload : RawReactionActionEvent):
+        guild : Guild = self.bot.get_guild(payload.guild_id)
+        channel : TextChannel = guild.get_channel(payload.channel_id)
+        message : Message = await channel.fetch_message(payload.message_id) 
+        content = str(message.content)
+        if content.startswith(self.join_leave_start_str):
+            ctf : str = content[len(self.join_leave_start_str):]
+            role : Role = discord.utils.get(guild.roles, name=ctf)
+            member : Member = guild.get_member(payload.user_id)
+            if payload.event_type == 'REACTION_ADD':
+                await member.add_roles(role)
+            else:
+                await member.remove_roles(role)
+
+    @commands.Cog.listener('on_raw_reaction_add')
+    async def ctf_join_reaction(self, payload : RawReactionActionEvent):
+        if str(payload.emoji) == '👍' and payload.user_id != self.bot.user.id:
+            await self.handle_ctf_reaction(payload)
+
+    @commands.Cog.listener('on_raw_reaction_remove')
+    async def ctf_leave_reaction(self, payload):
+        if str(payload.emoji) == '👍' and payload.user_id != self.bot.user.id:
+            await self.handle_ctf_reaction(payload)
 
     @commands.group(invoke_without_command=True)
     async def ctf(self, ctx: Context):
@@ -83,15 +116,29 @@ class CtfCog(commands.Cog, name='CTF Commands'):
         ctf_category_name = "CTFs"
         category = discord.utils.get(ctx.guild.categories, name=ctf_category_name)
         await ctx.guild.create_text_channel(name=ctf_name, overwrites=overwrites, category=category)
+        message : Message = ctx.message
+        await message.add_reaction('👍')
 
     @ctf.command(name="join")
     async def ctf_join(self, ctx: Context, ctf_name):
+        """
+        Join a CTF with the given name.
+        """
         ctf_role = discord.utils.get(ctx.guild.roles, name=ctf_name)
-        await ctx.message.author.add_roles(ctf_role)
-        # TODO fix this to be less annoying
-        # await message.channel.send(f"Hey {message.author.name}, you've been added to {ctf_role.name}!")
+        message : Message = ctx.message
+        if ctf_role == None or ctf_role in message.author.roles:
+            return
+        await message.author.add_roles(ctf_role)
+        await message.add_reaction('✅')
 
     @ctf.command(name="leave")
-    async def ctf_leave(ctx: Context, ctf_name):
+    async def ctf_leave(self, ctx: Context, ctf_name):
+        """
+        Leave a CTF you are in with the given name
+        """
         ctf_role = discord.utils.get(ctx.guild.roles, name=ctf_name)
-        await ctx.message.author.remove_roles(ctf_role)
+        message : Message = ctx.message
+        if ctf_role == None or ctf_role not in message.author.roles:
+            return
+        await message.author.remove_roles(ctf_role)
+        await message.add_reaction('✅')
