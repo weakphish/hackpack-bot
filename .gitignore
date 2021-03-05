@@ -2,3 +2,5 @@ venv
 pyenv.cfg
 config.json
 test.json
+__pycache__
+.vscode
