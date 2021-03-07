@@ -3,6 +3,7 @@ import discord
 
 import requests
 
+
 class CtfTimeEvents:
     def __init__(self, start=None, finish=None):
         self.a = 1
@@ -29,7 +30,8 @@ class CtfTimeEvents:
         self.currentIndex += 1
         if (len(self.currentList) == self.currentIndex):
             self.payload['start'] = self.payload['finish']
-            self.payload['finish'] = self.get_timestamp_plus_weeks(self.payload['finish'], 2)
+            self.payload['finish'] = self.get_timestamp_plus_weeks(
+                self.payload['finish'], 2)
             if not self.set_up_ctf_embed_list():
                 return self.next()
         return self.currentList[self.currentIndex]
@@ -38,21 +40,24 @@ class CtfTimeEvents:
         self.currentIndex -= 1
         if (self.currentIndex < 0):
             self.payload['finish'] = self.payload['start']
-            self.payload['start'] = self.get_timestamp_plus_weeks(self.payload['finish'], -2)
+            self.payload['start'] = self.get_timestamp_plus_weeks(
+                self.payload['finish'], -2)
             if not self.set_up_ctf_embed_list():
                 return self.prev()
         return self.currentList[self.currentIndex]
 
     def set_up_ctf_embed_list(self):
-        response_json = requests.get(self.baseUrl, headers=self.headers, params=self.payload).json()
+        response_json = requests.get(
+            self.baseUrl, headers=self.headers, params=self.payload).json()
         self.currentIndex = 0
         self.currentList = self.parse_json(response_json)
         if len(self.currentList) == 0:
             if self.attempts == 5:
-                raise Exception("No CTF's found in the past 5 attempted retrievals")
+                raise Exception(
+                    "No CTF's found in the past 5 attempted retrievals")
             self.attempts += 1
             return False
-        
+
         self.attempts = 0
         return True
 
@@ -67,7 +72,8 @@ class CtfTimeEvents:
             ctf_desc = ctf['description']
             ctf_start = ctf['start']
 
-            embed_var = discord.Embed(title=ctf_title, description=ctf_desc, url=ctf_url)
+            embed_var = discord.Embed(
+                title=ctf_title, description=ctf_desc, url=ctf_url)
 
             embed_var \
                 .set_author(name=organizer_name, icon_url=logo_url) \
