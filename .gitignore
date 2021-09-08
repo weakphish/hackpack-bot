@@ -1,6 +1,6 @@
-venv
-pyenv.cfg
-config.json
-test.json
-__pycache__
-.vscode
+secret
+
+
+# Added by cargo
+
+/target
