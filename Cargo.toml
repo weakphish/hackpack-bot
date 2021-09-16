@@ -7,4 +7,4 @@ edition = "2018"
 
 [dependencies]
 tokio = { version = "1.11.0", features = ["full"] }
-serenity = "0.10"
+serenity = { version = "0.10", features = ["unstable_discord_api"] }
