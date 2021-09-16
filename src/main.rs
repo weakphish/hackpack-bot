@@ -1,28 +1,11 @@
-use std::collections::HashMap;
-use std::{env, fs};
+use std::fs;
 
-use serenity::async_trait;
-use serenity::client::bridge::gateway::event::ShardStageUpdateEvent;
-use serenity::client::{Client, Context, EventHandler};
+use serenity::{Client, async_trait};
+use serenity::client::{Context, EventHandler};
 use serenity::framework::standard::{macros::group, StandardFramework};
-use serenity::model::channel::{
-    Channel, ChannelCategory, GuildChannel, Message, PartialGuildChannel, Reaction, StageInstance,
-};
-use serenity::model::event::{
-    ChannelPinsUpdateEvent, GuildMemberUpdateEvent, GuildMembersChunkEvent, InviteCreateEvent,
-    InviteDeleteEvent, MessageUpdateEvent, PresenceUpdateEvent, ResumedEvent, ThreadListSyncEvent,
-    ThreadMembersUpdateEvent, TypingStartEvent, VoiceServerUpdateEvent,
-};
-use serenity::model::gateway::{Presence, Ready};
-use serenity::model::guild::{
-    Emoji, Guild, GuildUnavailable, Integration, Member, PartialGuild, Role, ThreadMember,
-};
-use serenity::model::id::{
-    ApplicationId, ChannelId, EmojiId, GuildId, IntegrationId, MessageId, RoleId,
-};
+use serenity::model::gateway::Ready;
 use serenity::model::interactions::application_command::ApplicationCommand;
 use serenity::model::interactions::Interaction;
-use serenity::model::prelude::{CurrentUser, User, VoiceState};
 
 #[group]
 struct General;
