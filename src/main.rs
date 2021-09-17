@@ -28,18 +28,6 @@ impl EventHandler for Handler {
                 command.name("ping").description("A ping command")
             })
         })
-        .create_application_command(|command| {
-            command
-                .name("ctf-create")
-                .description("Create a CTF channel.")
-                .create_option(|option| {
-                    option
-                        .name("event-name")
-                        .description("The name of the CTF event.")
-                        .kind(ApplicationCommandOptionType::User)
-                        .required(true)
-                })
-        })
         .await;
 
         println!(
