@@ -22,3 +22,5 @@ jobs:
       run: cargo test --verbose
     - name: clippy-check
       uses: LoliGothick/clippy-check@v0.2.1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
