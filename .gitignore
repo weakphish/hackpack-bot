@@ -1,7 +1,4 @@
 secret
 app_id
 
-
-# Added by cargo
-
-/target
+hackpack-bot # binary
