@@ -1,4 +1,6 @@
 secret
 app_id
+.vscode
+*.sh
 
-hackpack-bot # binary
+hackpack-bot
