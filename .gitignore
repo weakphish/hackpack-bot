@@ -1,7 +1,6 @@
 secret
 app_id
+.vscode
+*.sh
 
-
-# Added by cargo
-
-/target
+hackpack-bot
