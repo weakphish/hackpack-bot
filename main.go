@@ -11,7 +11,7 @@ import (
 
 // Command line flags
 var (
-	GuildID        = flag.String("guild", "", "Test")
+	GuildID        = flag.String("guild", "", "Guild ID")
 	BotToken       = flag.String("token", "", "Bot access token")
 	RemoveCommands = flag.Bool("rmcmd", true, "Remove all commands after shutdown")
 )

@@ -1,9 +1,14 @@
 package main
 
-import "github.com/bwmarrin/discordgo"
+import (
+	"log"
 
-// Define our commands
+	"github.com/bwmarrin/discordgo"
+)
+
+// Define our ApplicationCommands
 var (
+	// Create an array of ApplicationCommand structs to register the definitions of our commands
 	commands = []*discordgo.ApplicationCommand{
 		{
 			Name:        "ping",
@@ -13,11 +18,20 @@ var (
 			Name:        "ctf",
 			Type:        discordgo.ChatApplicationCommand,
 			Description: "Parent command for the CTF group",
+			// Subcommands for 'ctf'
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Name:        "create",
 					Type:        discordgo.ApplicationCommandOptionSubCommand,
 					Description: "Create a CTF",
+					Options: []*discordgo.ApplicationCommandOption{
+						{
+							Type:        discordgo.ApplicationCommandOptionString,
+							Name:        "ctf-name",
+							Description: "CTF name",
+							Required:    true,
+						},
+					},
 				},
 				{
 					Name:        "join",
@@ -29,7 +43,7 @@ var (
 	}
 
 	// Create a map of <CommandName>:<HandlerFunction> for each command. Each command will
-	// correspond to a first-class function that will handle the command's usage.
+	// correspond to a first-class function that will handle the command's usage upon invocation
 	commandHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
 		// Ping command
 		"ping": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -40,28 +54,40 @@ var (
 				},
 			})
 		},
-		// CTF Group
-		// Reference: https://github.com/bwmarrin/discordgo/blob/master/examples/slash_commands/main.go
-		// Line 227
-		"ctf": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-			var content string
-
-			// As you can see, the name of subcommand (nested, top-level) or subcommand group
-			// is provided through arguments.
-			switch i.ApplicationCommandData().Options[0].Name {
-			case "create":
-				content = "The top-level subcommand is executed. Now try to execute the nested one."
-				ctfName := i.ApplicationCommandData().Options[1].Name
-				s.GuildRoleCreate(ctfName)
-			}
-
-			// Send back the reply
-			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-				Type: discordgo.InteractionResponseChannelMessageWithSource,
-				Data: &discordgo.InteractionResponseData{
-					Content: content,
-				},
-			})
-		},
+		// 'ctf' command group. The function is defined below for cleanliness
+		"ctf": ctfCommand,
 	}
 )
+
+// Handler function for the 'ctf' group of commands
+func ctfCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	var content string
+	var ctfName string
+	data := i.ApplicationCommandData()
+
+	switch data.Options[0].Name {
+	case "create":
+		// Ensure an argument was provided before we go indexing arrays
+		if len(data.Options[0].Options) > 0 {
+			ctfName = data.Options[0].Options[0].StringValue()
+			log.Printf("CTF Name given: %s\n", ctfName)
+
+			// Create the new role for the CTF
+			newRole, err := s.GuildRoleCreate(*GuildID)
+			if err != nil {
+				content = "Could not creat new guild role."
+			}
+			newRole.Name = ctfName
+		} else {
+			content = "No argument provided"
+		}
+	}
+
+	// Send back the reply
+	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: content,
+		},
+	})
+}
