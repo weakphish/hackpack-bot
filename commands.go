@@ -49,21 +49,13 @@ var (
 			// As you can see, the name of subcommand (nested, top-level) or subcommand group
 			// is provided through arguments.
 			switch i.ApplicationCommandData().Options[0].Name {
-			case "subcmd":
+			case "create":
 				content = "The top-level subcommand is executed. Now try to execute the nested one."
-			default:
-				if i.ApplicationCommandData().Options[0].Name != "scmd-grp" {
-					return
-				}
-				switch i.ApplicationCommandData().Options[0].Options[0].Name {
-				case "nst-subcmd":
-					content = "Nice, now you know how to execute nested commands too"
-				default:
-					// I added this in the case something might go wrong
-					content = "Oops, something gone wrong.\n" +
-						"Hol' up, you aren't supposed to see this message."
-				}
+				ctfName := i.ApplicationCommandData().Options[1].Name
+				s.GuildRoleCreate(ctfName)
 			}
+
+			// Send back the reply
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
