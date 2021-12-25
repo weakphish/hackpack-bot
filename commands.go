@@ -75,9 +75,10 @@ func ctfCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			// Create the new role for the CTF
 			newRole, err := s.GuildRoleCreate(*GuildID)
 			if err != nil {
-				content = "Could not creat new guild role."
+				content = "Could not create new guild role: " + err.Error()
+			} else {
+				newRole.Name = ctfName
 			}
-			newRole.Name = ctfName
 		} else {
 			content = "No argument provided"
 		}
