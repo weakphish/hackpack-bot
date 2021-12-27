@@ -46,18 +46,21 @@ var (
 	// correspond to a first-class function that will handle the command's usage upon invocation
 	commandHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
 		// Ping command
-		"ping": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-				Type: discordgo.InteractionResponseChannelMessageWithSource,
-				Data: &discordgo.InteractionResponseData{
-					Content: "Hey there! Congratulations, you just executed your first slash command",
-				},
-			})
-		},
+		"ping": pingCommand,
 		// 'ctf' command group. The function is defined below for cleanliness
 		"ctf": ctfCommand,
 	}
 )
+
+// Ping command handler
+func pingCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: "Hey there! Congratulations, you just executed your first slash command",
+		},
+	})
+}
 
 // This function handles the response action(s) for the 'ctf' group of ApplicationCommands
 func ctfCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
