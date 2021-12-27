@@ -59,7 +59,7 @@ var (
 	}
 )
 
-// Handler function for the 'ctf' group of commands
+// This function handles the response action(s) for the 'ctf' group of ApplicationCommands
 func ctfCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	var content string
 	var ctfName string
@@ -73,7 +73,7 @@ func ctfCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			log.Printf("CTF Name given: %s\n", ctfName)
 
 			// Create the new role for the CTF
-			newRole, err := s.GuildRoleCreate(*GuildID)
+			newRole, err := s.GuildRoleCreate(GlobalConfig.GuildID)
 			if err != nil {
 				content = "Could not create new guild role: " + err.Error()
 			} else {

@@ -1,40 +1,49 @@
 package main
 
 import (
-	"flag"
+	"encoding/json"
+	"github.com/bwmarrin/discordgo"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
-
-	"github.com/bwmarrin/discordgo"
 )
 
-// Command line flags
-var (
-	GuildID        = flag.String("guild", "", "Guild ID")
-	BotToken       = flag.String("token", "", "Bot access token")
-	RemoveCommands = flag.Bool("rmcmd", true, "Remove all commands after shutdown")
-)
+// BotConfig
+// Bot configuration that will tell it how to connect to the Discord Application.
+// The bot expects a `config.json` file with the following fields:
+// bot_token, guild_id, remove_commands
+type BotConfig struct {
+	GuildID        string `json:"guild_id"`
+	BotToken       string `json:"bot_token"`
+	RemoveCommands bool   `json:"remove_commands"`
+}
+
+// GlobalConfig
+// Global configuration struct
+var GlobalConfig BotConfig
 
 // Session pointer for our discord session
 var session *discordgo.Session
 
-// Parse the cmd flags
 func init() {
-	flag.Parse()
-}
+	// Read config file
+	content, err := ioutil.ReadFile("./config.json")
+	if err != nil {
+		log.Fatal("Error when opening file: ", err)
+	}
 
-// Init our bot session
-func init() {
-	var err error
-	session, err = discordgo.New("Bot " + *BotToken)
+	err = json.Unmarshal(content, &GlobalConfig)
+	if err != nil {
+		log.Fatal("Error during Unmarshal(): ", err)
+	}
+
+	session, err = discordgo.New("Bot " + GlobalConfig.BotToken)
 	if err != nil {
 		log.Fatalf("Invalid bot parameters: %v", err)
 	}
-}
 
-// Add handlers
-func init() {
+	// Add handlers
 	session.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if h, ok := commandHandlers[i.ApplicationCommandData().Name]; ok {
 			h(s, i)
@@ -52,7 +61,7 @@ func main() {
 	}
 
 	for _, v := range commands {
-		_, err := session.ApplicationCommandCreate(session.State.User.ID, *GuildID, v)
+		_, err := session.ApplicationCommandCreate(session.State.User.ID, GlobalConfig.GuildID, v)
 		if err != nil {
 			log.Panicf("Cannot create '%v' command: %v", v.Name, err)
 		}
