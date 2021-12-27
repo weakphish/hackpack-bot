@@ -61,26 +61,23 @@ var (
 
 // This function handles the response action(s) for the 'ctf' group of ApplicationCommands
 func ctfCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	var content string
+	var content string = "Response Content"
 	var ctfName string
 	data := i.ApplicationCommandData()
 
+	// Check which subcommand was called
 	switch data.Options[0].Name {
 	case "create":
-		// Ensure an argument was provided before we go indexing arrays
-		if len(data.Options[0].Options) > 0 {
-			ctfName = data.Options[0].Options[0].StringValue()
-			log.Printf("CTF Name given: %s\n", ctfName)
+		ctfName = data.Options[0].Options[0].StringValue()
+		log.Printf("New CTF Name given: %s\n", ctfName)
 
-			// Create the new role for the CTF
-			newRole, err := s.GuildRoleCreate(GlobalConfig.GuildID)
-			if err != nil {
-				content = "Could not create new guild role: " + err.Error()
-			} else {
-				newRole.Name = ctfName
-			}
+		// Create the new role for the CTF
+		newRole, err := s.GuildRoleCreate(GlobalConfig.GuildID)
+		if err != nil {
+			content = "Could not create new guild role: " + err.Error()
 		} else {
-			content = "No argument provided"
+			s.GuildRoleEdit(GlobalConfig.GuildID, newRole.ID, ctfName, 0, false, 0, true)
+			content = "Created CTF role " + ctfName
 		}
 	}
 
