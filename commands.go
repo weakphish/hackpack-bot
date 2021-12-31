@@ -57,15 +57,16 @@ func pingCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: "Hey there! Congratulations, you just executed your first slash command",
+			Content: "Pong!",
 		},
 	})
 }
 
 // This function handles the response action(s) for the 'ctf' group of ApplicationCommands
 func ctfCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	var content string = "Response Content"
+	var respContent string = "Response Content"
 	var ctfName string
+	var respComponents []discordgo.MessageComponent
 	data := i.ApplicationCommandData()
 
 	// Check which subcommand was called
@@ -74,35 +75,35 @@ func ctfCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		ctfName = data.Options[0].Options[0].StringValue()
 		log.Printf("New CTF Name given: %s\n", ctfName)
 
-		// Create the new role for the CTF
-		newRole, err := s.GuildRoleCreate(GlobalConfig.GuildID)
-		if err != nil {
-			content = "Could not create new guild role: " + err.Error()
-		} else {
-			s.GuildRoleEdit(GlobalConfig.GuildID, newRole.ID, ctfName, 0, false, 0, true)
-			content = "Created CTF role " + ctfName
+		/*
+			// Create the new role for the CTF
+			newRole, err := s.GuildRoleCreate(GlobalConfig.GuildID)
+			if err != nil {
+				content = "Could not create new guild role: " + err.Error()
+			} else {
+				s.GuildRoleEdit(GlobalConfig.GuildID, newRole.ID, ctfName, 0, false, 0, true)
+				content = "Created CTF role " + ctfName
+			}
+		*/
+
+		// Reply with a button to allow quickly joining the CTF
+		joinButton := discordgo.Button{
+			Label:    "Join CTF!",
+			Style:    discordgo.SuccessButton,
+			Disabled: false,
 		}
+		respComponents = append(respComponents, joinButton)
 	}
 
-	// Reply with a button to allow quickly joining the CTF
-	joinButton := discordgo.Button{
-		Label:    "Join CTF!",
-		Style:    discordgo.SuccessButton,
-		Disabled: false,
-	}
-
-	s.ChannelMessageSendComplex(i.ChannelID, &discordgo.MessageSend{
-		Content: "Join CTF",
-		Components: []discordgo.MessageComponent{
-			joinButton,
-		},
-	})
-
-	// Send back the reply
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	// Send back the status reply
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: content,
+			Content:    respContent,
+			Components: respComponents,
 		},
 	})
+	if err != nil {
+		log.Print(err)
+	}
 }
