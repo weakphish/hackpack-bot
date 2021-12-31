@@ -50,6 +50,14 @@ var (
 		// 'ctf' command group. The function is defined below for cleanliness
 		"ctf": ctfCommand,
 	}
+
+	// Define handlers for message components. That is to say, what will be executed when a
+	// component is interacted with.
+	componentsHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
+		"ctf_join": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			// TODO
+		},
+	}
 )
 
 // Ping command handler
