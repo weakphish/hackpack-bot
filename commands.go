@@ -84,6 +84,20 @@ func ctfCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	}
 
+	// Reply with a button to allow quickly joining the CTF
+	joinButton := discordgo.Button{
+		Label:    "Join CTF!",
+		Style:    discordgo.SuccessButton,
+		Disabled: false,
+	}
+
+	s.ChannelMessageSendComplex(i.ChannelID, &discordgo.MessageSend{
+		Content: "Join CTF",
+		Components: []discordgo.MessageComponent{
+			joinButton,
+		},
+	})
+
 	// Send back the reply
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
