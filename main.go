@@ -26,6 +26,7 @@ var GlobalConfig BotConfig
 // Session pointer for our discord session
 var session *discordgo.Session
 
+// This function runs prior to the main function. Executes some basic setup stuff.
 func init() {
 	// Read config file
 	content, err := ioutil.ReadFile("./config.json")
@@ -43,15 +44,24 @@ func init() {
 		log.Fatalf("Invalid bot parameters: %v", err)
 	}
 
-	// Add handlers
+	// Add handlers for different components (commands / message components)
 	session.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		if h, ok := commandHandlers[i.ApplicationCommandData().Name]; ok {
-			h(s, i)
+		switch i.Type {
+		case discordgo.InteractionApplicationCommand:
+			if handler, ok := commandHandlers[i.ApplicationCommandData().Name]; ok {
+				handler(s, i)
+			}
+
+		case discordgo.InteractionMessageComponent:
+			if h, ok := componentsHandlers[i.MessageComponentData().CustomID]; ok {
+				h(s, i)
+			}
 		}
 	})
 }
 
 func main() {
+	// Print status and open up the bot session
 	session.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
 		log.Println("Bot is up!")
 	})
@@ -60,6 +70,7 @@ func main() {
 		log.Fatalf("Cannot open the session: %v", err)
 	}
 
+	// Register each application command
 	for _, v := range commands {
 		_, err := session.ApplicationCommandCreate(session.State.User.ID, GlobalConfig.GuildID, v)
 		if err != nil {
@@ -67,8 +78,8 @@ func main() {
 		}
 	}
 
+	// End the session gracefully
 	defer session.Close()
-
 	stop := make(chan os.Signal)
 	signal.Notify(stop, os.Interrupt)
 	<-stop
