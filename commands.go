@@ -98,6 +98,7 @@ func ctfCommandCallback(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					Style:    discordgo.SuccessButton,
 					Disabled: false,
 					CustomID: "ctf_join",
+
 				},
 			},
 		}

@@ -2,12 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/bwmarrin/discordgo"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 // BotConfig
@@ -34,10 +33,12 @@ func init() {
 	if err != nil {
 		log.Fatal("Error when opening file: ", err)
 	}
+
 	err = json.Unmarshal(content, &GlobalConfig)
 	if err != nil {
 		log.Fatal("Error during Unmarshal(): ", err)
 	}
+
 	session, err = discordgo.New("Bot " + GlobalConfig.BotToken)
 	if err != nil {
 		log.Fatalf("Invalid bot parameters: %v", err)
