@@ -10,12 +10,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - run: "echo "$APPLICATION_CONFIG" > config.json"
+      - uses: actions/checkout@v2
+      - run: 'echo "$APPLICATION_CONFIG" > config.json'
         shell: bash
         env:
-          SSH_KEY: ${{secrets.APPLICATION_CONFIG}} 
-          
+          APPLICATION_CONFIG: ${{secrets.APPLICATION_CONFIG}} 
       # Build the image
-      - uses: actions/checkout@v2
       - name: Build the Docker image
         run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
