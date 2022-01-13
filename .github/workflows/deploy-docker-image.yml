@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Copy the configuration into a file
-        run: echo ${{ secrets.DUMMY_SECRET }} > config.json
+        run: echo ${{ secrets.DUMMY_SECRET }} > ./config.json
           
       # Build the image
       - uses: actions/checkout@v2
