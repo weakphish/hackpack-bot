@@ -1,21 +1,14 @@
-FROM ubuntu:20.04
+# syntax=docker/dockerfile:1
 
-MAINTAINER John Allison "jeallis2@ncsu.edu"
+FROM golang:1.16-alpine
 
-RUN yes | apt-get update
-RUN yes | apt-get install -y python3-pip python3-dev
+MAINTAINER John Allison "john123allison@gmail.com"
 
-COPY ./requirements.txt /requirements.txt
-COPY ./config.json /config.json
+WORKDIR /app
 
-WORKDIR /
+COPY go.mod ./
+COPY go.sum ./
 
-RUN pip3 install -r requirements.txt
+RUN go mod download
 
-COPY . /
-
-ENTRYPOINT [ "python3" ]
-
-CMD [ "main.py" ]
-
-
+COPY *.go ./
