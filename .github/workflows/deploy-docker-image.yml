@@ -17,4 +17,4 @@ jobs:
           APPLICATION_CONFIG: ${{secrets.APPLICATION_CONFIG}} 
       # Build the image
       - name: Build the Docker image
-        run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+        run: docker build . --file Dockerfile --tag hackpack-bot:$(date +%s)
