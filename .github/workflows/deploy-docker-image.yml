@@ -10,8 +10,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Copy the configuration into a file
-        run: echo ${{ secrets.DUMMY_SECRET }} > ./config.json
+      - run: 'echo "$APPLICATION_CONFIG" > config.json'
+        shell: bash
+        env:
+          SSH_KEY: ${{secrets.APPLICATION_CONFIG}} 
           
       # Build the image
       - uses: actions/checkout@v2
