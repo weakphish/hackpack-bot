@@ -6,6 +6,9 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+// ID for the CTF text channel category
+const ctfCategoryID = "801259574317416479"
+
 // Define our ApplicationCommands
 var (
 	// Create an array of ApplicationCommand structs to register the definitions of our commands
@@ -98,11 +101,35 @@ func ctfCommandCallback(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					Style:    discordgo.SuccessButton,
 					Disabled: false,
 					CustomID: "ctf_join",
-
 				},
 			},
 		}
 		respComponents = append(respComponents, actionRow)
+
+		// Create a channel for the CTF that is locked to the created role
+		targetGuild, _ := s.Guild(i.GuildID)
+		everyoneID := targetGuild.Roles[0].ID // Per my assumption, @everyone is the first role - Jack
+
+		s.GuildChannelCreateComplex(i.GuildID, discordgo.GuildChannelCreateData{
+			Name:     ctfName,
+			Type:     discordgo.ChannelTypeGuildText,
+			Topic:    "Channel for " + ctfName,
+			ParentID: ctfCategoryID,
+			PermissionOverwrites: []*discordgo.PermissionOverwrite{
+				{ // deny everyone read perms
+					ID:    everyoneID,
+					Type:  0,
+					Deny:  discordgo.PermissionViewChannel,
+					Allow: 0,
+				},
+				{ // allow the new role to view and send messages
+					ID:    newRole.ID,
+					Type:  0,
+					Deny:  0,
+					Allow: discordgo.PermissionViewChannel | discordgo.PermissionSendMessages,
+				},
+			},
+		})
 	}
 
 	// Send back the status reply
