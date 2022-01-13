@@ -2,5 +2,7 @@ secret
 app_id
 .vscode
 *.sh
+.idea
+*.json
 
 hackpack-bot
