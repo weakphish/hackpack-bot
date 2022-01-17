@@ -167,6 +167,17 @@ func joinCTFButtonCallback(s *discordgo.Session, i *discordgo.InteractionCreate)
 			ctfRole = r
 		}
 	}
+	// Check if the role was ever found and correct if not
+	if ctfRole == nil {
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "Role " + ctfName + " does not exist. Try creating it, first!",
+			},
+		})
+		return
+	}
+
 	s.GuildMemberRoleAdd(guild.ID, callingUser.ID, ctfRole.ID)
 
 	// Reply with success
