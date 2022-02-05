@@ -151,6 +151,7 @@ func joinCTFButtonCallback(s *discordgo.Session, i *discordgo.InteractionCreate)
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
+				Flags:   1 << 6,
 				Content: "Couldn't find the calling Guild",
 			},
 		})
@@ -172,6 +173,7 @@ func joinCTFButtonCallback(s *discordgo.Session, i *discordgo.InteractionCreate)
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
+				Flags:   1 << 6,
 				Content: "Role " + ctfName + " does not exist. Try creating it, first!",
 			},
 		})
@@ -184,6 +186,7 @@ func joinCTFButtonCallback(s *discordgo.Session, i *discordgo.InteractionCreate)
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
+			Flags:   1 << 6,
 			Content: "Added user " + callingUser.Username + " to role " + ctfRole.Name,
 		},
 	})
