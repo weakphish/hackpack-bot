@@ -130,6 +130,51 @@ func ctfCommandCallback(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				},
 			},
 		})
+	case "join":
+		guild, err := s.Guild(i.GuildID)
+		if err != nil {
+			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Flags:   1 << 6,
+					Content: "Couldn't find the calling Guild",
+				},
+			})
+			return
+		}
+		ctfName := i.Message.Content
+		callingUser := i.Member.User
+		log.Printf("Adding user %s to CTF %s\n", callingUser.Username, ctfName)
+
+		// Find the role of the CTF and add the user to it
+		var ctfRole *discordgo.Role
+		for _, r := range guild.Roles {
+			if r.Name == ctfName {
+				ctfRole = r
+			}
+		}
+		// Check if the role was ever found and correct if not
+		if ctfRole == nil {
+			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Flags:   1 << 6,
+					Content: "Role " + ctfName + " does not exist. Try creating it, first!",
+				},
+			})
+			return
+		}
+
+		s.GuildMemberRoleAdd(guild.ID, callingUser.ID, ctfRole.ID)
+
+		// Reply with success
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Flags:   1 << 6,
+				Content: "Added user " + callingUser.Username + " to role " + ctfRole.Name,
+			},
+		})
 	}
 
 	// Send back the status reply
