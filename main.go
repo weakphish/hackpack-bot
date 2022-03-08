@@ -2,11 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/bwmarrin/discordgo"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
+
+	"github.com/bwmarrin/discordgo"
 )
 
 // BotConfig
