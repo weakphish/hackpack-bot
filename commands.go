@@ -7,7 +7,7 @@ import (
 )
 
 // ID for the CTF text channel category
-const ctfCategoryID = "801259574317416479"
+const ctfCategoryID = "1259233177994661910"
 
 // Define our ApplicationCommands
 var (
@@ -45,7 +45,7 @@ var (
 							Type:        discordgo.ApplicationCommandOptionString,
 							Name:        "ctf-name",
 							Description: "CTF name",
-							Required:    false,
+							Required:    true,
 						},
 					},
 				},
@@ -68,19 +68,19 @@ var (
 
 	// Create a map of <CommandName>:<HandlerFunction> for each command. Each command will
 	// correspond to a first-class function that will handle the command's usage upon invocation
-	commandHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
+	// commandHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
 		// Ping command
-		"ping": pingCommandCallback,
+		// "ping": pingCommandCallback,
 		// 'ctf' command group. The function is defined below for cleanliness
-		"ctf": ctfCommandCallback,
-	}
+		// "ctf": ctfCommandCallback,
+	// }
 
 	// Define handlers for message components. That is to say, what will be executed when a
 	// component is interacted with.
-	componentsHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
-		"ctf_join":  joinCTF,
-		"ctf_leave": leaveCTF,
-	}
+	// componentsHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
+	// 	"ctf_join":  joinCTF,
+	//	"ctf_leave": leaveCTF,
+	// }
 )
 
 // Ping command handler
@@ -109,11 +109,13 @@ func ctfCommandCallback(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		log.Printf("New CTF Name given: %s\n", ctfName)
 
 		// Create the new role for the CTF
-		newRole, err := s.GuildRoleCreate(GlobalConfig.GuildID)
+		roleParams := &discordgo.RoleParams{
+			Name: ctfName,
+		}
+		newRole, err := s.GuildRoleCreate(GlobalConfig.GuildID, roleParams)
 		if err != nil {
 			respContent = "Could not create new guild role: " + err.Error()
 		} else {
-			s.GuildRoleEdit(GlobalConfig.GuildID, newRole.ID, ctfName, 0, false, 0, true)
 			respContent = ctfName
 		}
 
@@ -167,6 +169,8 @@ func ctfCommandCallback(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			},
 		})
 
+		log.Println(channel)
+
 		if err != nil {
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -175,7 +179,7 @@ func ctfCommandCallback(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					Content: "Could not create channel",
 				},
 			})
-
+		} else {
 			log.Println(err)
 		}
 
@@ -240,41 +244,49 @@ func joinCTFCallback(s *discordgo.Session, i *discordgo.InteractionCreate, ctfNa
 	}
 
 	callingUser := i.Member.User
-	log.Printf("Adding user %s to CTF %s\n", callingUser.Username, ctfName)
-
-	// Find the role of the CTF and add the user to it
-	var ctfRole *discordgo.Role
-	for _, r := range guild.Roles {
-		if r.Name == ctfName {
-			ctfRole = r
+	log.Printf("Adding user %s to CTF %s", callingUser.Username, ctfName)
+	var targetRole *discordgo.Role
+	for _, role := range guild.Roles {
+		if role.Name == ctfName {
+			targetRole = role
+			break
 		}
 	}
-	// Check if the role was ever found and correct if not
-	if ctfRole == nil {
+
+	if targetRole == nil {
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Flags:   1 << 6,
-				Content: "Role " + ctfName + " does not exist. Try creating it, first!",
+				Content: "Could not find role: " + ctfName,
 			},
 		})
+
+		log.Println(err)
 		return
 	}
 
-	s.GuildMemberRoleAdd(guild.ID, callingUser.ID, ctfRole.ID)
+	// Add the user to the role
+	err = s.GuildMemberRoleAdd(i.GuildID, callingUser.ID, targetRole.ID)
+	if err != nil {
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Flags:   1 << 6,
+				Content: "Could not add role to caller",
+			},
+		})
 
-	// Reply with success
-	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		log.Println(err)
+		return
+	}
+
+	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Flags:   1 << 6,
-			Content: "Added user " + callingUser.Username + " to role " + ctfRole.Name,
+			Content: "Added you to " + targetRole.Name,
 		},
 	})
-
-	if err != nil {
-		log.Print(err)
-	}
 }
 
 func leaveCTFCallback(s *discordgo.Session, i *discordgo.InteractionCreate, ctfName string) {
@@ -287,43 +299,54 @@ func leaveCTFCallback(s *discordgo.Session, i *discordgo.InteractionCreate, ctfN
 				Content: "Couldn't find the calling Guild",
 			},
 		})
+
+		log.Println(err)
 		return
 	}
 
 	callingUser := i.Member.User
-	log.Printf("Removing user %s from CTF %s\n", callingUser.Username, ctfName)
-
-	// Find the role of the CTF and add the user to it
-	var ctfRole *discordgo.Role
-	for _, r := range guild.Roles {
-		if r.Name == ctfName {
-			ctfRole = r
+	log.Printf("Removing user %s from CTF %s", callingUser.Username, ctfName)
+	var targetRole *discordgo.Role
+	for _, role := range guild.Roles {
+		if role.Name == ctfName {
+			targetRole = role
+			break
 		}
 	}
-	// Check if the role was ever found and correct if not
-	if ctfRole == nil {
+
+	if targetRole == nil {
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Flags:   1 << 6,
-				Content: "Role " + ctfName + " does not exist. Try creating it, first!",
+				Content: "Could not find role: " + ctfName,
 			},
 		})
+
+		log.Println(err)
 		return
 	}
 
-	s.GuildMemberRoleRemove(guild.ID, callingUser.ID, ctfRole.ID)
+	// Remove the user from the role
+	err = s.GuildMemberRoleRemove(i.GuildID, callingUser.ID, targetRole.ID)
+	if err != nil {
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Flags:   1 << 6,
+				Content: "Could not remove role from caller",
+			},
+		})
 
-	// Reply with success
-	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		log.Println(err)
+		return
+	}
+
+	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Flags:   1 << 6,
-			Content: "Removed user " + callingUser.Username + " from role " + ctfRole.Name,
+			Content: "Removed you from " + targetRole.Name,
 		},
 	})
-
-	if err != nil {
-		log.Print(err)
-	}
 }
+

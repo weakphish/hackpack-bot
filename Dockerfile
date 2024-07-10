@@ -1,8 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM golang:1.16-alpine
-
-MAINTAINER John Allison "john123allison@gmail.com"
+FROM golang:1.23-rc-alpine3.19
 
 WORKDIR /app
 
